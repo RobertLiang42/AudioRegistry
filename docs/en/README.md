@@ -1,6 +1,6 @@
 # AudioRegistry
 
-**Turn recordings into speech material you can review, filter, and export.**
+**Turn multi-speaker audio into a speech material library you can review, filter, and export.**
 
 [简体中文](../../README.md) · **English** · [日本語](../jp/README.md)
 
@@ -11,6 +11,8 @@ AudioRegistry brings speaker diarization, transcription, timeline review, and mu
 ### Separate speakers automatically, then refine the first pass
 
 pyannote.audio finds speech intervals and groups them by speaker; faster-whisper creates draft transcripts. You can correct speaker labels, timing, and text afterward, with optional subtitle-assisted alignment.
+
+For speaker diarization, AudioRegistry expects a processed vocals-only audio track. You can extract one from a mix with a vocal separation tool such as UVR5.
 
 ### WebUI1: review every line on a timeline
 
