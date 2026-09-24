@@ -1,0 +1,78 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyd
+*.so
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+build/
+dist/
+*.egg-info/
+
+# Virtual environments and IDEs
+.venv/
+venv/
+env/
+.conda/
+.idea/
+.vscode/
+*.code-workspace
+
+# Secrets and machine-local configuration
+.env
+.env.*
+!.env.example
+config/*.local.yaml
+config/*.local.yml
+config.local.yaml
+*.pem
+*.key
+*.token
+
+# Private runtime data, caches, models, logs, and generated output
+data/**
+!data/.gitkeep
+models/**
+!models/.gitkeep
+output/**
+!output/.gitkeep
+.cache/
+.runtime/
+logs/
+*.log
+*.sqlite
+*.sqlite3
+*.sqlite3-*
+*.db
+*.db-*
+*.npz
+
+# Audio/video/subtitle input and generated media
+*.wav
+*.flac
+*.mp3
+*.m4a
+*.aac
+*.ogg
+*.opus
+*.mp4
+*.mkv
+*.mov
+*.srt
+*.vtt
+*.ass
+*.ssa
+
+# Office imports/exports are user data unless explicitly placed in fixtures.
+*.xlsx
+*.xls
+*.csv
+!tests/fixtures/**
+
+# Operating-system files
+.DS_Store
+Thumbs.db
+desktop.ini

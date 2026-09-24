@@ -1,0 +1,167 @@
+<!doctype html>
+<html lang="en-US">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title data-i18n="app.review">Timeline Review</title>
+  <link rel="stylesheet" href="/styles.css">
+</head>
+<body>
+  <div id="app" class="app-shell" aria-busy="true">
+    <header class="topbar">
+      <div class="brand"><span class="brand-mark" aria-hidden="true"></span><strong data-i18n="app.name">AudioRegistry</strong><span class="mode" data-i18n="app.review">Timeline Review</span></div>
+      <div class="source-selectors">
+        <details id="project-menu" class="source-menu"><summary id="project-summary" data-i18n="common.select_project">Select project</summary><div id="project-options" class="source-popover"></div></details>
+        <details id="audio-menu" class="source-menu" hidden><summary id="audio-summary" data-i18n="common.select_audio">Select audio</summary><div id="audio-options" class="source-popover"></div></details>
+      </div>
+      <div class="top-actions">
+        <button id="undo" class="icon-button" type="button" disabled data-i18n-aria-label="review.undo">↶</button>
+        <button id="redo" class="icon-button" type="button" disabled data-i18n-aria-label="review.redo">↷</button>
+        <button id="save" class="button" type="button" disabled data-i18n="common.save">Save</button>
+        <button id="refresh" class="button" type="button" disabled data-i18n="common.refresh">Refresh</button>
+        <div class="export-menu-container">
+          <button id="export" class="button export-button" type="button" aria-expanded="false" aria-controls="export-menu" disabled data-i18n="common.export">Export ▾</button>
+          <section id="export-menu" class="export-popover" role="dialog" data-i18n-aria-label="common.export" hidden>
+            <button id="export-subtitles" class="button primary export-action" type="button" disabled data-i18n="review.export_subtitles">Export subtitles</button>
+            <button id="export-au" class="button primary export-action" type="button" disabled data-i18n="review.export_audition">Export AU markers</button>
+          </section>
+        </div>
+      </div>
+    </header>
+
+    <section id="review-filters" class="filters" data-i18n-aria-label="review.filter" hidden>
+      <details id="speaker-filter" class="filter-menu">
+        <summary id="speaker-filter-summary" data-i18n="filter.speaker">Speaker filter</summary>
+        <div class="filter-popover">
+          <input id="speaker-search" class="filter-search" type="search" data-i18n-placeholder="filter.search_speaker">
+          <div class="filter-shortcuts"><button id="speaker-all" type="button" data-i18n="common.all">Select all</button><button id="speaker-none" type="button" data-i18n="common.none">Clear</button></div>
+          <div id="speaker-filters" class="filter-options"></div>
+          <button id="speaker-filter-add" class="filter-add" type="button" data-i18n="review.new_speaker">Add speaker</button>
+        </div>
+      </details>
+      <details id="tag-filter" class="filter-menu">
+        <summary id="tag-filter-summary" data-i18n="filter.tag">Tag filter</summary>
+        <div class="filter-popover">
+          <div class="filter-shortcuts"><button id="tag-all" type="button" data-i18n="common.all">Select all</button><button id="tag-none" type="button" data-i18n="common.none">Clear</button></div>
+          <div id="tag-options" class="filter-options"></div>
+          <button id="tag-filter-add" class="filter-add" type="button" data-i18n="review.new_tag">Add tag</button>
+        </div>
+      </details>
+      <span id="alignment-warning" class="alignment-warning"></span>
+      <div class="filter-right">
+      <span id="filter-count" class="filter-count">—</span>
+      <label class="duration-filter"><span data-i18n="review.audio_offset">Audio offset</span>
+        <input id="audio-offset" type="number" step="0.001" value="0" inputmode="decimal" data-i18n-aria-label="review.audio_offset"><span data-i18n="common.seconds">seconds</span>
+      </label>
+      </div>
+    </section>
+
+    <section id="empty-state" class="empty-state"><strong data-i18n="review.empty_title">Select a project</strong><span data-i18n="review.empty_help">Load a timeline and default audio from the project menu above</span></section>
+
+    <main id="review-content" hidden>
+      <section class="timeline-panel" data-i18n-aria-label="review.full_timeline">
+        <div class="timeline-heading"><span data-i18n="review.full_timeline">Full timeline</span><span id="overview-range">00:00:00.000 — --:--:--.---</span></div>
+        <div class="canvas-wrap overview-wrap"><canvas id="overview"></canvas><div id="overview-loading" class="canvas-loading" data-i18n="review.loading_overview">Generating the full waveform…</div></div>
+        <div class="timeline-heading detail-heading"><span data-i18n="review.detail_timeline">Fine editing</span><span id="audio-status" class="audio-status" role="status" aria-live="polite"></span><span id="detail-range">—</span></div>
+        <div class="canvas-wrap detail-wrap"><canvas id="detail"></canvas><div id="detail-loading" class="canvas-loading" data-i18n="review.loading_detail">Loading local waveform…</div></div>
+        <div class="transport">
+          <button id="play" class="transport-button" type="button"><span class="transport-icon" aria-hidden="true">▶</span><span class="transport-label" data-i18n="review.play">Play</span></button>
+          <button id="play-segment" class="button subtle" type="button" data-i18n="review.play_segment">Play segment</button>
+          <label class="switch"><input id="loop" type="checkbox"><span data-i18n="review.loop">Loop</span></label>
+          <button id="add" class="button subtle" type="button" data-i18n="common.add">Add</button>
+          <button id="split" class="button subtle" type="button" data-i18n="review.split">Split</button>
+          <button id="merge" class="button subtle" type="button" disabled data-i18n-title="review.merge_help" data-i18n="review.merge">Merge</button>
+          <button id="delete" class="button danger" type="button" data-i18n="common.delete">Delete</button>
+          <details id="duration-filter-menu" class="filter-menu duration-menu toolbar-filter-menu">
+            <summary data-i18n="review.filter">Filter</summary>
+            <div class="filter-popover duration-popover">
+              <label class="duration-filter"><span data-i18n="review.duration_under">Segments shorter than</span>
+                <input id="min-duration" type="number" min="0" step="0.1" value="0" inputmode="decimal"><span data-i18n="review.duration_suffix">seconds</span>
+              </label>
+              <label class="duration-empty-only"><input id="duration-empty-only" type="checkbox"><span data-i18n="review.empty_transcript_only">and without transcript</span></label>
+              <div class="duration-actions">
+                <button id="duration-hide" class="button duration-hide primary" type="button" aria-pressed="true" data-i18n="review.hidden">Hidden</button>
+                <button id="duration-delete" class="button duration-delete" type="button" data-i18n="common.delete">Delete</button>
+              </div>
+            </div>
+          </details>
+          <label class="switch"><input id="show-hidden" type="checkbox" checked><span data-i18n="filter.dim_unfiltered">Dim unfiltered markers</span></label>
+          <span id="play-time" class="play-time">00:00:00.000</span>
+          <label class="zoom-control"><span data-i18n="review.window">Window</span>
+            <select id="zoom"><option id="zoom-current" value="" hidden></option><option value="15" data-i18n="review.zoom_15">15 seconds</option><option value="30" selected data-i18n="review.zoom_30">30 seconds</option><option value="60" data-i18n="review.zoom_60">1 minute</option><option value="120" data-i18n="review.zoom_120">2 minutes</option><option value="300" data-i18n="review.zoom_300">5 minutes</option></select>
+          </label>
+        </div>
+      </section>
+
+      <section class="workbench">
+        <aside class="navigator" data-i18n-aria-label="filter.results">
+          <div class="panel-heading"><strong data-i18n="filter.results">Filtered results</strong><span id="navigator-count">0</span></div>
+          <div id="navigator-list" class="navigator-list"></div>
+        </aside>
+
+        <aside class="inspector" data-i18n-aria-label="review.current_editor">
+          <div class="inspector-meta"><select id="speaker"></select><span id="selected-id" data-i18n="review.unselected">Not selected</span></div>
+          <label class="text-field"><span data-i18n="review.transcript">Transcript</span><textarea id="transcript" rows="3"></textarea></label>
+          <div class="annotation-row"><select id="segment-tag" class="tag-select"></select><textarea id="segment-note" class="note-field" maxlength="10000" data-i18n-placeholder="common.notes"></textarea></div>
+          <div class="inspector-actions">
+            <button id="retranscribe" class="button primary" type="button" data-i18n="review.retranscribe">Retranscribe</button>
+            <button id="export-clip" class="button" type="button" data-i18n="review.clip">Clip</button>
+          </div>
+          <div class="field-row two-columns">
+            <label><span data-i18n="review.start">Start time</span><input id="start-time" type="text" autocomplete="off"></label>
+            <label><span data-i18n="review.end">End time</span><input id="end-time" type="text" autocomplete="off"></label>
+          </div>
+          <label><span data-i18n="review.duration">Duration</span><input id="segment-duration" class="readonly-duration" type="text" readonly tabindex="-1"></label>
+        </aside>
+
+        <section class="context-panel" data-i18n-aria-label="review.complete_timeline">
+          <div class="panel-heading"><strong data-i18n="review.transcript_context">Transcript context</strong><span id="context-count" data-i18n="review.complete_timeline">Complete timeline</span></div>
+          <div id="context-list" class="context-list"></div>
+        </section>
+      </section>
+    </main>
+
+    <footer id="review-statusbar" class="statusbar" hidden><span id="save-state" data-i18n="review.status_clean">No changes</span><span id="validation-state" data-i18n="review.timeline_valid">Timeline valid</span></footer>
+    <audio id="audio" preload="metadata"></audio>
+  </div>
+
+  <dialog id="asr-dialog">
+    <form method="dialog" class="dialog-content">
+      <h2 data-i18n="review.asr_result">Retranscription result</h2>
+      <label><span data-i18n="review.old_text">Original text</span><textarea id="asr-old" rows="4" readonly></textarea></label>
+      <label><span data-i18n="review.new_text">New text</span><textarea id="asr-new" rows="4"></textarea></label>
+      <div class="dialog-actions"><button class="button" value="cancel" data-i18n="review.keep_old">Keep original</button><button id="accept-asr" class="button primary" value="default" data-i18n="review.use_new">Use new text</button></div>
+    </form>
+  </dialog>
+
+  <dialog id="speaker-dialog">
+    <form class="dialog-content">
+      <h2 data-i18n="review.assign_speaker">Assign speaker to new segment</h2>
+      <p data-i18n="review.assign_help">The new segment stays in the current results until filters change.</p>
+      <label><span data-i18n="common.speaker">Speaker</span><select id="new-segment-speaker" required></select></label>
+      <div class="dialog-actions"><button id="assign-speaker" class="button primary" type="button" data-i18n="common.confirm">Confirm</button></div>
+    </form>
+  </dialog>
+
+  <dialog id="speaker-name-dialog">
+    <form class="dialog-content">
+      <h2 data-i18n="review.new_speaker">Add speaker</h2>
+      <label><span data-i18n="review.speaker_name">Speaker name</span><input id="new-speaker-name" type="text" autocomplete="off" data-i18n-placeholder="review.auto_speaker_placeholder"></label>
+      <p class="inspector-note" data-i18n="review.auto_speaker_help">A name is generated from the highest current speaker number.</p>
+      <div class="dialog-actions"><button id="cancel-new-speaker" class="button" type="button" data-i18n="common.cancel">Cancel</button><button id="confirm-new-speaker" class="button primary" type="submit" data-i18n="review.confirm_add">Add</button></div>
+    </form>
+  </dialog>
+
+  <dialog id="tag-name-dialog">
+    <form class="dialog-content">
+      <h2 data-i18n="review.new_tag">Add tag</h2>
+      <label><span data-i18n="review.tag_name">Tag name</span><input id="new-tag-name" type="text" maxlength="100" autocomplete="off"></label>
+      <div class="dialog-actions"><button id="cancel-new-tag" class="button" type="button" data-i18n="common.cancel">Cancel</button><button class="button primary" type="submit" data-i18n="review.confirm_add">Add</button></div>
+    </form>
+  </dialog>
+
+  <div id="toast" class="toast" role="status" aria-live="polite"></div>
+  <script src="/i18n.js"></script>
+  <script src="/app.js"></script>
+</body>
+</html>

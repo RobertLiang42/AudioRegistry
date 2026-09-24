@@ -1,0 +1,52 @@
+[build-system]
+requires = ["setuptools>=75", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "audio-registry"
+version = "0.1.0"
+description = "Local-first audio segmentation, annotation, review, and dataset registry."
+readme = "README.md"
+requires-python = ">=3.12,<3.13"
+license = {file = "LICENSE"}
+authors = [{name = "AudioRegistry contributors"}]
+dependencies = [
+  "PyYAML==6.0.2",
+  "numpy==2.5.2",
+  "tqdm==4.70.0",
+  "rich==15.0.0",
+  "opencc-python-reimplemented==0.1.7",
+]
+
+[project.optional-dependencies]
+ml = [
+  "torch==2.8.0",
+  "torchaudio==2.8.0",
+  "torchcodec==0.7.0",
+  "pyannote.audio==4.0.7",
+  "faster-whisper==1.2.1",
+  "ctranslate2==4.7.1",
+]
+dev = ["ruff==0.13.2"]
+
+[project.scripts]
+audio-registry = "audio_registry.cli:main"
+
+[tool.setuptools]
+package-dir = {"" = "src"}
+include-package-data = true
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.setuptools.package-data]
+audio_registry = ["locales/*.json", "ui/*.js", "webui/assets/*", "assembly_webui/assets/*"]
+
+[tool.ruff]
+target-version = "py312"
+line-length = 100
+extend-exclude = ["data", "models", "output", ".cache"]
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B"]
+ignore = ["E501"]

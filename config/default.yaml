@@ -1,0 +1,53 @@
+device: cuda
+speaker:
+  backend: builtin:pyannote
+  model: pyannote/speaker-diarization-community-1
+  revision: 3533c8cf8e369892e6b79ff1bf80f7b0286a54ee
+  segmentation_batch_size: 8
+  embedding_batch_size: 16
+
+asr:
+  backend: builtin:faster-whisper
+  whisper_model: Systran/faster-whisper-large-v3
+  revision: edaa852ec7e145841d8ffdb056a99866b5f0a478
+  # Detect language independently per speaker interval (split at 30s maximum).
+  language: auto
+  batch_size: 16
+  compute_type: float16
+
+process:
+  # Global defaults shown in the guided processing window.
+  start_padding: 0
+  end_padding: 0.2
+
+webui:
+  # Global defaults shared by every project in the timeline review WebUI.
+  min_duration: 0
+  min_duration_empty_only: false
+  duration_filter_enabled: true
+  show_hidden: true
+
+audio_export:
+  channels: 1
+  # Keep the source rate. Use an integer such as 32000 only when a downstream
+  # training recipe explicitly requires a fixed rate.
+  sample_rate: source
+  codec: pcm_s16le
+
+# Optional WebUI2 clip-only processing. The list export never processes audio.
+clip_export:
+  convert_format: false
+  loudness_balance: false
+  target_lufs: -24.0
+  normalization_strength: 0.70
+  gain_limit_db: 8.0
+  true_peak_ceiling_dbtp: -1.5
+
+paths:
+  data_dir: data
+  model_dir: models
+  output_dir: output
+
+ui:
+  # null = detect the operating system/browser language, then fall back to en-US.
+  language: null

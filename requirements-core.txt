@@ -1,0 +1,5 @@
+PyYAML==6.0.2
+numpy==2.5.2
+tqdm==4.70.0
+rich==15.0.0
+opencc-python-reimplemented==0.1.7

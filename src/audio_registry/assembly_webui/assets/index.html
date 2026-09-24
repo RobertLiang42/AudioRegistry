@@ -1,0 +1,108 @@
+<!doctype html>
+<html lang="en-US">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title data-i18n="app.assembly">Dataset Assembly</title>
+  <link rel="stylesheet" href="/styles.css">
+</head>
+<body>
+  <div id="app" class="app-shell" aria-busy="true">
+    <header class="topbar">
+      <div class="brand"><span class="brand-mark" aria-hidden="true"></span><strong data-i18n="app.name">AudioRegistry</strong><span class="mode" data-i18n="app.assembly">Dataset Assembly</span></div>
+      <details id="project-filter" class="filter-menu project-filter-menu">
+        <summary id="project-summary" data-i18n="common.select_project">Select project</summary>
+        <div class="filter-popover">
+          <div class="filter-title" data-i18n="assembly.project">Project</div>
+          <div id="project-options" class="filter-options"></div>
+        </div>
+      </details>
+      <div class="top-actions">
+        <span id="status" class="status" data-i18n="assembly.loading_database">Loading database…</span>
+        <span id="save-slot" class="sticky-control-slot top-action-slot"><button id="save" class="button" type="button" disabled data-i18n="common.save">Save</button></span>
+        <span id="refresh-slot" class="sticky-control-slot top-action-slot"><button id="refresh" class="button" type="button" disabled data-i18n="common.refresh">Refresh</button></span>
+        <div class="export-menu-container">
+          <button id="export" class="button export-button" type="button" aria-expanded="false" aria-controls="export-menu" disabled data-i18n="common.export">Export ▾</button>
+          <section id="export-menu" class="export-popover" role="dialog" data-i18n-aria-label="assembly.export_settings" hidden>
+            <button id="cut" class="button primary export-action" type="button" disabled data-i18n="assembly.export_clips">Export clips</button>
+            <div class="export-steps">
+              <label class="export-step"><input id="convert-format" type="checkbox"><span data-i18n="assembly.convert_format">Convert format</span></label>
+              <p class="export-hint" data-i18n="assembly.convert_help">Convert to mono and retain source precision.</p>
+              <label class="export-step"><input id="loudness-balance" type="checkbox"><span data-i18n="assembly.balance_loudness">Balance loudness</span></label>
+              <div class="loudness-values">
+                <label><span data-i18n="assembly.target_loudness">Target loudness</span><span class="unit-input"><input id="target-lufs" type="number" value="-24" min="-70" max="0" step="0.1"><span>LUFS</span></span></label>
+                <label><span data-i18n="assembly.normalization_strength">Normalization strength</span><span class="unit-input"><input id="normalization-strength" type="number" value="70" min="0" max="100" step="1"><span>%</span></span></label>
+                <label><span data-i18n="assembly.gain_limit">Gain / attenuation limit</span><span class="unit-input"><span>±</span><input id="gain-limit" type="number" value="8" min="0" max="60" step="0.1"><span>dB</span></span></label>
+                <label><span data-i18n="assembly.true_peak">True-peak ceiling</span><span class="unit-input"><input id="true-peak-ceiling" type="number" value="-1.5" min="-60" max="0" step="0.1"><span>dBTP</span></span></label>
+              </div>
+              <p class="export-hint" data-i18n="assembly.loudness_help">Measure each clip and apply static gain.</p>
+              <p class="export-hint" data-i18n="assembly.steps_help">Selected steps run in order.</p>
+            </div>
+            <div class="export-output-section"><button id="export-list" class="button export-action" type="button" disabled data-i18n="assembly.export_list">Export list</button><p class="export-hint" data-i18n="assembly.list_help">Create only the filtered filename/transcript list.</p></div>
+            <div class="export-output-section"><button id="export-table" class="button export-action" type="button" disabled data-i18n="assembly.export_table">Export spreadsheet</button><p class="export-hint" data-i18n="assembly.table_help">Export filtered rows without audio information.</p></div>
+          </section>
+        </div>
+      </div>
+    </header>
+
+    <section class="filters">
+      <div id="speaker-filter-slot" class="sticky-control-slot filter-control-slot">
+        <details id="speaker-filter" class="filter-menu">
+          <summary id="speaker-summary" data-i18n="filter.speaker">Speaker filter</summary>
+          <div class="filter-popover">
+            <input id="speaker-search" class="filter-search" type="search" data-i18n-placeholder="filter.search_speaker">
+            <div class="filter-shortcuts"><button id="speaker-all" type="button" data-i18n="common.all">Select all</button><button id="speaker-none" type="button" data-i18n="common.none">Clear</button></div>
+            <div id="speaker-options" class="filter-options"></div>
+            <button id="speaker-add" class="filter-add" type="button" data-i18n="review.new_speaker">Add speaker</button>
+          </div>
+        </details>
+      </div>
+      <div id="tag-filter-slot" class="sticky-control-slot filter-control-slot">
+        <details id="tag-filter" class="filter-menu" hidden>
+          <summary id="tag-summary" data-i18n="filter.tag">Tag filter</summary>
+          <div class="filter-popover">
+            <div class="filter-title" data-i18n="common.tag">Tag</div>
+            <div class="filter-shortcuts"><button id="tag-all" type="button" data-i18n="common.all">Select all</button><button id="tag-none" type="button" data-i18n="common.none">Clear</button></div>
+            <div id="tag-options" class="filter-options"></div>
+            <button id="tag-add" class="filter-add" type="button" data-i18n="review.new_tag">Add tag</button>
+          </div>
+        </details>
+      </div>
+      <span id="summary" class="result-summary" data-i18n="assembly.nothing_selected">No project selected</span>
+    </section>
+
+    <main class="workspace">
+      <section id="empty-state" class="empty-state">
+        <div class="empty-icon">◫</div>
+        <h1 data-i18n="assembly.empty_title">Choose projects to assemble</h1>
+        <p data-i18n="assembly.empty_help">Select one or more projects from the project menu.</p>
+      </section>
+      <div id="project-groups" class="project-groups" hidden></div>
+    </main>
+  </div>
+
+  <audio id="audio" preload="metadata"></audio>
+
+  <dialog id="tag-dialog">
+    <form id="tag-form" class="dialog-content">
+      <h2 data-i18n="review.new_tag">Add tag</h2>
+      <label><span data-i18n="common.name">Name</span><input id="tag-name" type="text" maxlength="100" autocomplete="off" data-i18n-placeholder="review.tag_example"></label>
+      <p id="tag-dialog-help" data-i18n="assembly.tag_help">The new tag belongs to the current project.</p>
+      <div class="dialog-actions"><button id="tag-cancel" class="button" type="button" data-i18n="common.cancel">Cancel</button><button class="button primary" type="submit" data-i18n="review.confirm_add">Add</button></div>
+    </form>
+  </dialog>
+
+  <dialog id="speaker-dialog">
+    <form id="speaker-form" class="dialog-content">
+      <h2 data-i18n="review.new_speaker">Add speaker</h2>
+      <label><span data-i18n="common.name">Name</span><input id="speaker-name" type="text" maxlength="100" autocomplete="off" data-i18n-placeholder="review.auto_speaker_placeholder"></label>
+      <p id="speaker-dialog-help" data-i18n="assembly.speaker_help">The new speaker belongs to the current project.</p>
+      <div class="dialog-actions"><button id="speaker-cancel" class="button" type="button" data-i18n="common.cancel">Cancel</button><button class="button primary" type="submit" data-i18n="review.confirm_add">Add</button></div>
+    </form>
+  </dialog>
+
+  <div id="toast" class="toast" role="status" aria-live="polite"></div>
+  <script src="/i18n.js"></script>
+  <script src="/app.js"></script>
+</body>
+</html>
