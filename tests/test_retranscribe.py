@@ -1,8 +1,8 @@
 import unittest
 from dataclasses import replace
 from pathlib import Path
-from types import SimpleNamespace
-from unittest.mock import patch
+from types import ModuleType, SimpleNamespace
+from unittest.mock import Mock, patch
 
 import numpy as np
 
@@ -12,6 +12,20 @@ from audio_registry.models import Segment
 
 
 class RetranscriptionTests(unittest.TestCase):
+    def setUp(self):
+        whisper = ModuleType("faster_whisper")
+        audio = ModuleType("faster_whisper.audio")
+        whisper.audio = audio
+        whisper.WhisperModel = Mock()
+        whisper.BatchedInferencePipeline = object
+        audio.decode_audio = Mock()
+        modules = patch.dict("sys.modules", {
+            "faster_whisper": whisper,
+            "faster_whisper.audio": audio,
+        })
+        modules.start()
+        self.addCleanup(modules.stop)
+
     def test_short_rows_stay_blank_without_loading_model(self):
         config = load_config(Path(__file__).resolve().parents[1] / "config.example.yaml")
         rows = [Segment(0, 0.49, "A", "Thank you", "a.wav"),
