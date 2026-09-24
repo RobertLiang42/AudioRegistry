@@ -1,3 +1,4 @@
+import os
 import tempfile
 import tkinter as tk
 import unittest
@@ -11,6 +12,7 @@ from audio_registry.project_window import show_project_dialog
 
 
 class ProjectWindowTests(unittest.TestCase):
+    @unittest.skipIf(os.environ.get("GITHUB_ACTIONS") == "true", "Tk pointer test requires an interactive desktop")
     def test_next_uses_current_database_selection(self):
         previous_locale = get_locale()
         set_locale("zh-CN")
