@@ -95,10 +95,59 @@ class ProjectWindowTests(unittest.TestCase):
                             root.update_idletasks()
                             self.assertLess(tree.column("#0", "width"), name_width)
                             self.assertGreater(tree.column("segment_count", "width"), count_width)
+                            for target_x in (tree.winfo_width() * 2, -tree.winfo_width()):
+                                separator = next(
+                                    x for x in range(1, tree.winfo_width())
+                                    if tree.identify_region(x, heading_y) == "separator"
+                                )
+                                tree.event_generate("<ButtonPress-1>", x=separator, y=heading_y)
+                                tree.event_generate("<B1-Motion>", x=target_x, y=heading_y)
+                                self.assertLessEqual(
+                                    tree.column("#0", "width") + tree.column("segment_count", "width"),
+                                    tree.winfo_width(),
+                                )
+                                tree.event_generate("<ButtonRelease-1>", x=target_x, y=heading_y)
+                                root.update_idletasks()
+                                self.assertGreaterEqual(tree.column("#0", "width"), tree.column("#0", "minwidth"))
+                                self.assertGreaterEqual(
+                                    tree.column("segment_count", "width"), tree.column("segment_count", "minwidth")
+                                )
+                                self.assertLessEqual(
+                                    tree.column("#0", "width") + tree.column("segment_count", "width"),
+                                    tree.winfo_width(),
+                                )
 
                             for name in ("new_batch_one", "new_batch_two"):
                                 enter(name)
                                 button("dialogs.save_queue").invoke()
+                            queue = next(
+                                widget for widget in descendants(root)
+                                if isinstance(widget, ttk.Treeview) and "audio" in widget.cget("columns")
+                            )
+                            root.update_idletasks()
+                            queue_heading_y = next(
+                                y for y in range(1, min(queue.winfo_height(), 60))
+                                if queue.identify_region(10, y) == "heading"
+                            )
+                            for target_x in (queue.winfo_width() * 2, -queue.winfo_width()):
+                                separator = next(
+                                    x for x in range(1, queue.winfo_width())
+                                    if queue.identify_region(x, queue_heading_y) == "separator"
+                                )
+                                queue.event_generate("<ButtonPress-1>", x=separator, y=queue_heading_y)
+                                queue.event_generate("<B1-Motion>", x=target_x, y=queue_heading_y)
+                                self.assertLessEqual(
+                                    queue.column("project", "width") + queue.column("audio", "width"),
+                                    queue.winfo_width(),
+                                )
+                                queue.event_generate("<ButtonRelease-1>", x=target_x, y=queue_heading_y)
+                                root.update_idletasks()
+                                self.assertGreaterEqual(queue.column("project", "width"), queue.column("project", "minwidth"))
+                                self.assertGreaterEqual(queue.column("audio", "width"), queue.column("audio", "minwidth"))
+                                self.assertLessEqual(
+                                    queue.column("project", "width") + queue.column("audio", "width"),
+                                    queue.winfo_width(),
+                                )
                             button("dialogs.create_batch").invoke()
                             style = ttk.Style(root)
                             self.assertEqual(style.lookup("Database.Treeview", "background"), "#ffffff")

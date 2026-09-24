@@ -33,6 +33,47 @@ class DatabasePanel:
     selected_names: Callable[[], list[str]]
 
 
+def bind_two_column_resize(tree, first: str, second: str) -> None:
+    """Keep both columns visible while dragging their shared heading divider."""
+    drag: dict[str, int] = {}
+
+    def set_width(first_width: int, available: int) -> None:
+        minimum_first = int(tree.column(first, "minwidth"))
+        minimum_second = int(tree.column(second, "minwidth"))
+        first_width = max(minimum_first, min(first_width, available - minimum_second))
+        tree.column(first, width=first_width)
+        tree.column(second, width=available - first_width)
+
+    def press(event):
+        if tree.identify_region(event.x, event.y) != "separator":
+            return None
+        if abs(event.x - int(tree.column(first, "width"))) > 12:
+            return None
+        available = tree.winfo_width() - 4
+        if available < int(tree.column(first, "minwidth")) + int(tree.column(second, "minwidth")):
+            return None
+        first_width = int(tree.column(first, "width"))
+        set_width(first_width, available)
+        drag.update(x=event.x, first_width=int(tree.column(first, "width")), available=available)
+        return "break"
+
+    def motion(event):
+        if not drag:
+            return None
+        set_width(drag["first_width"] + event.x - drag["x"], drag["available"])
+        return "break"
+
+    def release(_event):
+        if not drag:
+            return None
+        drag.clear()
+        return "break"
+
+    tree.bind("<ButtonPress-1>", press, add="+")
+    tree.bind("<B1-Motion>", motion, add="+")
+    tree.bind("<ButtonRelease-1>", release, add="+")
+
+
 def _root():
     import tkinter as tk
 
@@ -112,6 +153,7 @@ def build_database_panel(
     tree.heading("segment_count", text=t("dialogs.project_segment_count"), anchor="center")
     tree.column("#0", width=round(500 * scale), minwidth=round(120 * scale), stretch=True)
     tree.column("segment_count", width=round(130 * scale), minwidth=round(75 * scale), stretch=True, anchor="center")
+    bind_two_column_resize(tree, "#0", "segment_count")
     scrollbar = ttk.Scrollbar(viewport, orient="vertical", command=tree.yview)
     tree.configure(yscrollcommand=scrollbar.set)
     tree.pack(side="left", fill="both", expand=True)
@@ -190,7 +232,7 @@ def build_database_panel(
             toggle(name)
         return "break"
 
-    tree.bind("<Button-1>", click_row)
+    tree.bind("<Button-1>", click_row, add="+")
     tree.bind("<space>", toggle_focused)
 
     def require_selection() -> list[str]:

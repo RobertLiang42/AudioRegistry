@@ -4,7 +4,7 @@
 
 [简体中文](../../README.md) · **English** · [日本語](../jp/README.md)
 
-AudioRegistry brings speaker diarization, transcription, timeline review, and multi-project assembly together in a local workspace. Source audio stays where it is; project records, time coordinates, and annotations live in a local SQLite database.
+AudioRegistry connects speaker diarization, transcription, manual review, cross-project filtering, and clip export in one repeatable local workflow. Source audio stays where it is; project records, time coordinates, and annotations live in a local SQLite database.
 
 ## Features
 

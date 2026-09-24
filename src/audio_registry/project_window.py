@@ -5,7 +5,7 @@ from __future__ import annotations
 import sys
 from pathlib import Path
 
-from .dialogs import AUDIO_FILETYPES, AUDIO_SUFFIXES, build_database_panel
+from .dialogs import AUDIO_FILETYPES, AUDIO_SUFFIXES, bind_two_column_resize, build_database_panel
 from .i18n import t
 
 
@@ -145,8 +145,9 @@ def show_project_dialog(
     queue = ttk.Treeview(queue_card, columns=("project", "audio"), show="headings", selectmode="browse", height=5)
     queue.heading("project", text=t("dialogs.project_name"))
     queue.heading("audio", text=t("dialogs.audio_file"))
-    queue.column("project", width=140, stretch=True)
-    queue.column("audio", width=220, stretch=True)
+    queue.column("project", width=round(140 * scale), minwidth=round(110 * scale), stretch=True)
+    queue.column("audio", width=round(220 * scale), minwidth=round(130 * scale), stretch=True)
+    bind_two_column_resize(queue, "project", "audio")
     queue.grid(row=1, column=0, sticky="nsew")
     scrollbar = ttk.Scrollbar(queue_card, orient="vertical", command=queue.yview)
     scrollbar.grid(row=1, column=1, sticky="ns")
