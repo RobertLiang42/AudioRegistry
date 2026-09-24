@@ -71,13 +71,25 @@ class ProjectWindowTests(unittest.TestCase):
                             root.update_idletasks()
                             name_width = tree.column("#0", "width")
                             count_width = tree.column("segment_count", "width")
-                            separator = next(
-                                x for x in range(name_width - 8, name_width + 9)
-                                if tree.identify_region(x, 8) == "separator"
+                            heading_y = next(
+                                (
+                                    y for y in range(1, min(tree.winfo_height(), 60))
+                                    if tree.identify_region(10, y) == "heading"
+                                ),
+                                None,
                             )
-                            tree.event_generate("<ButtonPress-1>", x=separator, y=8)
-                            tree.event_generate("<B1-Motion>", x=separator - 100, y=8)
-                            tree.event_generate("<ButtonRelease-1>", x=separator - 100, y=8)
+                            self.assertIsNotNone(heading_y, "Project database header is not visible")
+                            separator = next(
+                                (
+                                    x for x in range(1, tree.winfo_width())
+                                    if tree.identify_region(x, heading_y) == "separator"
+                                ),
+                                None,
+                            )
+                            self.assertIsNotNone(separator, "Project-name column divider is not visible")
+                            tree.event_generate("<ButtonPress-1>", x=separator, y=heading_y)
+                            tree.event_generate("<B1-Motion>", x=separator - 100, y=heading_y)
+                            tree.event_generate("<ButtonRelease-1>", x=separator - 100, y=heading_y)
                             root.update_idletasks()
                             self.assertLess(tree.column("#0", "width"), name_width)
                             self.assertGreater(tree.column("segment_count", "width"), count_width)
